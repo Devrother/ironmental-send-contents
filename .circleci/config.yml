@@ -1,0 +1,59 @@
+version: 2
+jobs:
+  test-cron-scheduler:
+    docker:
+      - image: circleci/node:8.10.0
+    # environment:
+    #   API: "https://api.ironmental.net/v1"
+    working_directory: ~/cron-repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+      - run: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: "JavaScript Linter"
+          command: yarn eslint -- --format junit -o reports/junit/js-lint-results.xml
+      # - run:
+      #     name: "JavaScript Test Suite"
+      #     environment:
+      #       JEST_JUNIT_OUTPUT: reports/junit/js-test-results.xml
+      #     command: yarn test -- --ci --reporters=default --reporters=jest-junit
+      - store_test_results:
+          path: reports/junit
+      - store_artifacts:
+          path: reports/junit
+  deploy-cron-scheduler:
+    docker:
+      - image: circleci/node:8.10.0
+    working_directory: ~/cron-repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-backend-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-backend-dependencies-
+      - run: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-backend-dependencies-{{ checksum "package.json" }}
+      - run: yarn deploy
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+      - test-cron-scheduler
+      - deploy-cron-scheduler:
+          filters:
+            branches:
+              only: master
+          requires:
+            - test-cron-scheduler
