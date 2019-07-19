@@ -1,0 +1,20 @@
+.DS_STORE
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# Webpack directories
+.webpack
+
+# others
+.idea
+
+.DS_STORE
+.env
+.env.local
+.webpack
+yarn-error.log
+junit.xml
