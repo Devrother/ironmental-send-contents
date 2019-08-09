@@ -8,9 +8,6 @@ const SubscriberSchema = new Schema({
     minlength: 3,
     maxlength: 50,
   },
-  confirmCode: {
-    type: String,
-  },
   isCertify: {
     type: Boolean,
     required: true,
