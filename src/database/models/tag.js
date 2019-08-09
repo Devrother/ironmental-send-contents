@@ -39,4 +39,17 @@ TagSchema.statics.getInterviewsCntInTag = function() {
     .countDocuments();
 };
 
+TagSchema.statics.getTags = async function() {
+  return (await this.find()
+    .select('name interviews')
+    .lean()).reduce((acc, item) => {
+      return {
+        ...acc,
+        [item.name]: new Set(
+          item.interviews.map(objectId => objectId.toString()),
+        ),
+      };
+    }, {});
+}
+
 export default mongoose.model('Tag', TagSchema);
