@@ -10,34 +10,6 @@ import {
   createMailForm,
 } from 'lib/utils';
 
-const getTags = async () => {
-  return (await Tag.find()
-    .select('name interviews')
-    .lean()).reduce((acc, item) => {
-    return {
-      ...acc,
-      [item.name]: new Set(
-        item.interviews.map(objectId => objectId.toString()),
-      ),
-    };
-  }, {});
-};
-
-const getSubscribers = async () => {
-  const subscribers = await Subscriber.find()
-    .where('isCertify')
-    .equals(true)
-    .select('email received favoriteTags')
-    .lean();
-
-  subscribers.forEach(sub => {
-    sub._id = sub._id.toString();
-    sub.received = new Set(sub.received.map(objectId => objectId.toString()));
-  });
-
-  return subscribers;
-};
-
 const selectInterview = interviews => {
   const randIdx = Math.floor(Math.random() * interviews.size);
   return Array.from(interviews)[randIdx];
@@ -68,7 +40,7 @@ const updateAllreceived = async datasToUpdate => {
   await Promise.all(datasToUpdate.map(updateEachReceived));
 };
 
-const getInterviewByAllTags = tags =>
+const getInterviewByAllTags = tags => 
   Object.keys(tags).reduce((acc, tag) => union(acc, tags[tag]), new Set());
 
 const getInterviewsByFavoriteTags = (tags, favoriteTags) =>
@@ -118,12 +90,12 @@ const getDatasToSend = (subscribers, tags) =>
 
 export const handler = async () => {
   db.connect();
-  const subscribers = await getSubscribers();
-  const tags = await getTags();
+  const subscribers = await Subscriber.getSubscribers();
+  const tags = await Tag.getTags();
   const datasToSend = await Promise.all(
     getDatasToSend(subscribers, tags),
   );
-
+  
   await Promise.all([
     sendAllMail(datasToSend),
     updateAllreceived(datasToSend),
