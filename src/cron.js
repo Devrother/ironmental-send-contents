@@ -10,7 +10,7 @@ import {
   createMailForm,
 } from 'lib/utils';
 
-const selectInterview = interviews => {
+export const selectInterview = interviews => {
   const randIdx = Math.floor(Math.random() * interviews.size);
   return Array.from(interviews)[randIdx];
 };
@@ -40,10 +40,10 @@ const updateAllreceived = async datasToUpdate => {
   await Promise.all(datasToUpdate.map(updateEachReceived));
 };
 
-const getInterviewByAllTags = tags => 
+export const getInterviewByAllTags = tags => 
   Object.keys(tags).reduce((acc, tag) => union(acc, tags[tag]), new Set());
 
-const getInterviewsByFavoriteTags = (tags, favoriteTags) =>
+export const getInterviewsByFavoriteTags = (tags, favoriteTags) => 
   favoriteTags.reduce(
     (acc, favoriteTag) => union(acc, tags[favoriteTag]),
     new Set(),
