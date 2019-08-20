@@ -10,33 +10,17 @@ const TagSchema = new Schema({
   interviews: [{ type: Schema.Types.ObjectId, ref: 'Interview' }],
 });
 
-TagSchema.statics.findTagsSelect = function(atr) {
-  return this.find()
-    .select(atr)
-    .orFail();
-};
-
-TagSchema.statics.joinInterviewsByName = function(
-  tagName,
-  limitNum,
-  offsetNum,
-) {
-  return this.findOne({ name: tagName }, 'interviews')
-    .populate({
-      path: 'interviews',
-      options: {
-        limit: limitNum,
-        sort: { createdAt: -1 },
-        skip: offsetNum,
-      },
-    })
-    .orFail();
-};
-
-TagSchema.statics.getInterviewsCntInTag = function() {
-  return this.find()
-    .select('interviews')
-    .countDocuments();
-};
+TagSchema.statics.getTags = async function() {
+  return (await this.find()
+    .select('name interviews')
+    .lean()).reduce((acc, item) => {
+      return {
+        ...acc,
+        [item.name]: new Set(
+          item.interviews.map(objectId => objectId.toString()),
+        ),
+      };
+    }, {});
+}
 
 export default mongoose.model('Tag', TagSchema);
