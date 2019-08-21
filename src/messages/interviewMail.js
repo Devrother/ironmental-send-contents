@@ -1,5 +1,8 @@
-export default (question, interviewId, subscriberId) => {
+export default (question, interviewId, subscriberId, keywordHtml) => {
   return `<a href="https://ironmental.net"><img src="https://ironmental-bucket.s3.ap-northeast-2.amazonaws.com/ironmental_logo_v2.png" style="display: block; width: 128px; margin: 0 auto;"/></a>
+    
+    ${keywordHtml}
+
     <div style="max-width: 100%; width: 400px; margin: 0 auto; padding: 1rem; text-align: justify; background: #f8f9fa; border: 1px solid #dee2e6; box-sizing: border-box; border-radius: 4px; color: #6d7e8f; margin-top: 0.5rem; box-sizing: border-box;">
       <b style="black">${question} </b>
     </div>
