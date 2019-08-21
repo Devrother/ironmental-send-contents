@@ -1,6 +1,7 @@
 import sendMail from 'lib/sendMail';
 import { Subscriber, Tag, Interview } from 'database/models';
 import interviewMail from 'messages/interviewMail';
+import keywordHtml from 'messages/keywordHtml';
 import db from 'database/db';
 import {
   difference,
@@ -16,10 +17,10 @@ export const selectInterview = interviews => {
 };
 
 const sendEachMail = async dataToSend => {
-  const date = new Date();
-  const { email, sendable, question, subscriberId } = dataToSend;
-  const subject = `[IronMental] ${getTimeStamp(date)}`;
-  const html = interviewMail(question, sendable, subscriberId);
+  const { email, sendable, question, subscriberId, keywords} = dataToSend;
+  const subject = `[IronMental] ${getTimeStamp(new Date())}`;
+  const keywordsHtml = keywords.reduce((acc, keyword) => acc + keywordHtml(keyword), '');
+  const html = interviewMail(question, sendable, subscriberId, keywordsHtml);
 
   await sendMail(createMailForm(email, subject, html));
 };
@@ -65,11 +66,12 @@ const getSendableInterview = (tags, received, favoriteTags) => {
     : selectInterview(interviews);
 };
 
-const addQuestion = async data => {
+const addQuestionAndKeywords = async data => {
+  const { question, keywords } = await Interview.findById(data.sendable).select('question keywords')
   return {
     ...data,
-    question: (await Interview.findById(data.sendable).select('question'))
-      .question,
+    question,
+    keywords
   };
 };
 
@@ -85,9 +87,9 @@ const addSendableInterview = tags => subscriber => {
   };
 };
 
-const getDatasToSend = (subscribers, tags) =>
-  subscribers.map(addSendableInterview(tags)).map(addQuestion);
-
+const getDatasToSend = (subscribers, tags) => {
+  return subscribers.map(addSendableInterview(tags)).map(addQuestionAndKeywords);
+}
 export const handler = async () => {
   db.connect();
   const subscribers = await Subscriber.getSubscribers();
@@ -95,7 +97,6 @@ export const handler = async () => {
   const datasToSend = await Promise.all(
     getDatasToSend(subscribers, tags),
   );
-  
   await Promise.all([
     sendAllMail(datasToSend),
     updateAllreceived(datasToSend),
