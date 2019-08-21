@@ -18,6 +18,10 @@ const InterviewSchema = new Schema({
     type: Array,
     default: [],
   },
+  keywords: {
+    type: Array,
+    default: [],
+  }
 });
 
 export default mongoose.model('Interview', InterviewSchema);
