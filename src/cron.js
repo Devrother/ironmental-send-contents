@@ -87,9 +87,9 @@ const addSendableInterview = tags => subscriber => {
   };
 };
 
-const getDatasToSend = (subscribers, tags) => {
-  return subscribers.map(addSendableInterview(tags)).map(addQuestionAndKeywords);
-}
+const getDatasToSend = (subscribers, tags) => 
+  subscribers.map(addSendableInterview(tags)).map(addQuestionAndKeywords);
+
 export const handler = async () => {
   db.connect();
   const subscribers = await Subscriber.getSubscribers();
